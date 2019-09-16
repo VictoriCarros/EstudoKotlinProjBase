@@ -10,13 +10,14 @@ import br.com.pugramming.estudokotlinprojbase.DealsAdapter
 import br.com.pugramming.estudokotlinprojbase.R
 import br.com.pugramming.estudokotlinprojbase.databinding.ActivityDealslistBinding
 import br.com.pugramming.estudokotlinprojbase.remote.model.Car
+import br.com.pugramming.estudokotlinprojbase.remote.webservices.DealsServiceFactory
 import br.com.pugramming.estudokotlinprojbase.repository.DealsRepository
 import br.com.pugramming.estudokotlinprojbase.viewmodel.DealsListViewModel
 
 //lar
 class DealsListActivity : AppCompatActivity() {
 
-    private val repository = DealsRepository()
+    private val repository = DealsRepository(DealsServiceFactory.createDealsService())
     private val viewModel = DealsListViewModel(repository)
     private lateinit var adapter: DealsAdapter
 
@@ -48,6 +49,7 @@ class DealsListActivity : AppCompatActivity() {
     private fun bindObservable() {
         viewModel.listOfDeals.observe(this, Observer { dealersList ->
             dealersList?.let {
+                //Não é preciso declarar lista dentro do adapter, ele já tem uma por padrão
                adapter.submitList(dealersList)
             }
         })

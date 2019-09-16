@@ -12,9 +12,8 @@ import br.com.pugramming.estudokotlinprojbase.databinding.CarItemBinding
 import br.com.pugramming.estudokotlinprojbase.remote.model.Car
 import br.com.pugramming.estudokotlinprojbase.viewmodel.AdapterViewModel
 
+//Ao implementar o ListAdapter não é necessário dar overrite no getItemCount()
 class DealsAdapter(private val itemClick: (Car) -> Unit):ListAdapter<Car, DealsAdapter.ViewHolder>(DiffCallback) {
-
-    private lateinit var dealsList:List<Car>
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DealsAdapter.ViewHolder {
         val binding:CarItemBinding = DataBindingUtil.inflate(LayoutInflater.from(parent.context), R.layout.car_item, parent, false)
@@ -32,10 +31,6 @@ class DealsAdapter(private val itemClick: (Car) -> Unit):ListAdapter<Car, DealsA
 
     private fun createOnClickListener(car: Car): View.OnClickListener {
         return View.OnClickListener { itemClick(car) }
-    }
-
-    override fun getItemCount(): Int {
-        return if(::dealsList.isInitialized) dealsList.size else 0
     }
 
     class ViewHolder(private val binding: CarItemBinding):RecyclerView.ViewHolder(binding.root){

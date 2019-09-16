@@ -13,8 +13,18 @@ class DealsListViewModel(private val repository: DealsRepository) : ViewModel(){
     val listOfDeals:LiveData<List<Car>> = mutableDeals
 
     fun loadDeals(){
-        Log.d("DealsListViewModel","loadDeals")
-        mutableDeals.value = repository.getAllDeals().value
+        repository.getDeals(
+            object : DealsRepository.DealsCallback{
+                override fun onSuccess(carList: List<Car>) {
+                    mutableDeals.value = carList
+                }
+
+                override fun onError(error: String) {
+                    Log.d("DealsListViewModel", "onError")
+                }
+            }
+        )
     }
+
 
 }

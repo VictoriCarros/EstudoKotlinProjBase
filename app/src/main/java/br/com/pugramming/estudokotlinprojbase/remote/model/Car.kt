@@ -1,10 +1,16 @@
 package br.com.pugramming.estudokotlinprojbase.remote.model
 
 data class Car(
-    val price:Int = 0,
-    val trim:String = "teste",
-    val year:String = "",
-    val color:String = "colorteste",
-    val gear:String = "",
-    val fuel:String = ""
+    val color: String,
+    val doors: Int,
+    val equipments: List<Equipment>,
+    val fuel: String,
+    val gear: String,
+    val make: String,
+    val manufactureYear: Int,
+    val model: String,
+    val modelYear: Int,
+    val photos: List<String>,
+    val price: Int,
+    val trim: String
 )
