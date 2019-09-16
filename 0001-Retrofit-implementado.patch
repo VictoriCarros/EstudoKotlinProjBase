@@ -1,0 +1,367 @@
+From b09c998040bcc2621eaf7af1070076d7b2a3862f Mon Sep 17 00:00:00 2001
+From: Victor Pereira <victor.pereira@icarros.com.br>
+Date: Mon, 16 Sep 2019 16:02:21 -0300
+Subject: [PATCH] Retrofit implementado
+
+---
+ .idea/misc.xml                                |  2 +-
+ .idea/vcs.xml                                 |  6 ++++
+ app/build.gradle                              |  6 ++--
+ app/src/main/AndroidManifest.xml              |  2 ++
+ .../estudokotlinprojbase/DealsAdapter.kt      |  7 +---
+ .../estudokotlinprojbase/remote/model/Car.kt  | 18 ++++++----
+ .../remote/model/Equipment.kt                 |  6 ++++
+ .../remote/webservices/DealsService.kt        | 10 ++++++
+ .../remote/webservices/DealsServiceFactory.kt | 17 ++++++++++
+ .../remote/webservices/DealsWS.kt             | 16 ---------
+ .../repository/DealsRepository.kt             | 34 ++++++++++++++++---
+ .../view/DealsListActivity.kt                 |  4 ++-
+ .../viewmodel/AdapterViewModel.kt             |  4 +--
+ .../viewmodel/DealsListViewModel.kt           | 14 ++++++--
+ app/src/main/res/layout/car_item.xml          |  6 ++--
+ 15 files changed, 107 insertions(+), 45 deletions(-)
+ create mode 100644 .idea/vcs.xml
+ create mode 100644 app/src/main/java/br/com/pugramming/estudokotlinprojbase/remote/model/Equipment.kt
+ create mode 100644 app/src/main/java/br/com/pugramming/estudokotlinprojbase/remote/webservices/DealsService.kt
+ create mode 100644 app/src/main/java/br/com/pugramming/estudokotlinprojbase/remote/webservices/DealsServiceFactory.kt
+ delete mode 100644 app/src/main/java/br/com/pugramming/estudokotlinprojbase/remote/webservices/DealsWS.kt
+
+diff --git a/.idea/misc.xml b/.idea/misc.xml
+index 7bfef59..37a7509 100644
+--- a/.idea/misc.xml
++++ b/.idea/misc.xml
+@@ -1,6 +1,6 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
+-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" project-jdk-name="1.8" project-jdk-type="JavaSDK">
++  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_7" project-jdk-name="1.8" project-jdk-type="JavaSDK">
+     <output url="file://$PROJECT_DIR$/build/classes" />
+   </component>
+   <component name="ProjectType">
+diff --git a/.idea/vcs.xml b/.idea/vcs.xml
+new file mode 100644
+index 0000000..94a25f7
+--- /dev/null
++++ b/.idea/vcs.xml
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="VcsDirectoryMappings">
++    <mapping directory="$PROJECT_DIR$" vcs="Git" />
++  </component>
++</project>
+\ No newline at end of file
+diff --git a/app/build.gradle b/app/build.gradle
+index ea17947..ac3cd46 100644
+--- a/app/build.gradle
++++ b/app/build.gradle
+@@ -43,9 +43,9 @@ dependencies {
+     implementation 'androidx.cardview:cardview:1.0.0'
+ 
+     //Retrofit
+-    implementation "com.squareup.retrofit2:retrofit:2.4.0"
+-    implementation "com.squareup.retrofit2:adapter-rxjava2:2.4.0"
+-    implementation "com.squareup.retrofit2:converter-moshi:2.4.0"
++    implementation "com.squareup.retrofit2:retrofit:2.6.0"
++    implementation "com.squareup.retrofit2:adapter-rxjava2:2.6.0"
++    implementation "com.squareup.retrofit2:converter-moshi:2.6.0"
+ 
+     implementation "com.github.smarteist:autoimageslider:1.3.2"
+ 
+diff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml
+index 6654972..464f46c 100644
+--- a/app/src/main/AndroidManifest.xml
++++ b/app/src/main/AndroidManifest.xml
+@@ -2,6 +2,8 @@
+ <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+           package="br.com.pugramming.estudokotlinprojbase">
+ 
++    <uses-permission android:name="android.permission.INTERNET"/>
++
+     <application
+             android:allowBackup="true"
+             android:icon="@mipmap/ic_launcher"
+diff --git a/app/src/main/java/br/com/pugramming/estudokotlinprojbase/DealsAdapter.kt b/app/src/main/java/br/com/pugramming/estudokotlinprojbase/DealsAdapter.kt
+index f563555..c6299ea 100644
+--- a/app/src/main/java/br/com/pugramming/estudokotlinprojbase/DealsAdapter.kt
++++ b/app/src/main/java/br/com/pugramming/estudokotlinprojbase/DealsAdapter.kt
+@@ -12,10 +12,9 @@ import br.com.pugramming.estudokotlinprojbase.databinding.CarItemBinding
+ import br.com.pugramming.estudokotlinprojbase.remote.model.Car
+ import br.com.pugramming.estudokotlinprojbase.viewmodel.AdapterViewModel
+ 
++//Ao implementar o ListAdapter não é necessário dar overrite no getItemCount()
+ class DealsAdapter(private val itemClick: (Car) -> Unit):ListAdapter<Car, DealsAdapter.ViewHolder>(DiffCallback) {
+ 
+-    private lateinit var dealsList:List<Car>
+-
+     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DealsAdapter.ViewHolder {
+         val binding:CarItemBinding = DataBindingUtil.inflate(LayoutInflater.from(parent.context), R.layout.car_item, parent, false)
+         return ViewHolder(binding)
+@@ -34,10 +33,6 @@ class DealsAdapter(private val itemClick: (Car) -> Unit):ListAdapter<Car, DealsA
+         return View.OnClickListener { itemClick(car) }
+     }
+ 
+-    override fun getItemCount(): Int {
+-        return if(::dealsList.isInitialized) dealsList.size else 0
+-    }
+-
+     class ViewHolder(private val binding: CarItemBinding):RecyclerView.ViewHolder(binding.root){
+         fun bind(carDeal: Car, listener: View.OnClickListener) {
+ 
+diff --git a/app/src/main/java/br/com/pugramming/estudokotlinprojbase/remote/model/Car.kt b/app/src/main/java/br/com/pugramming/estudokotlinprojbase/remote/model/Car.kt
+index 5b224fa..3bb1847 100644
+--- a/app/src/main/java/br/com/pugramming/estudokotlinprojbase/remote/model/Car.kt
++++ b/app/src/main/java/br/com/pugramming/estudokotlinprojbase/remote/model/Car.kt
+@@ -1,10 +1,16 @@
+ package br.com.pugramming.estudokotlinprojbase.remote.model
+ 
+ data class Car(
+-    val price:Int = 0,
+-    val trim:String = "teste",
+-    val year:String = "",
+-    val color:String = "colorteste",
+-    val gear:String = "",
+-    val fuel:String = ""
++    val color: String,
++    val doors: Int,
++    val equipments: List<Equipment>,
++    val fuel: String,
++    val gear: String,
++    val make: String,
++    val manufactureYear: Int,
++    val model: String,
++    val modelYear: Int,
++    val photos: List<String>,
++    val price: Int,
++    val trim: String
+ )
+\ No newline at end of file
+diff --git a/app/src/main/java/br/com/pugramming/estudokotlinprojbase/remote/model/Equipment.kt b/app/src/main/java/br/com/pugramming/estudokotlinprojbase/remote/model/Equipment.kt
+new file mode 100644
+index 0000000..26aa1bb
+--- /dev/null
++++ b/app/src/main/java/br/com/pugramming/estudokotlinprojbase/remote/model/Equipment.kt
+@@ -0,0 +1,6 @@
++package br.com.pugramming.estudokotlinprojbase.remote.model
++
++data class Equipment(
++    val category: String,
++    val description: String
++)
+\ No newline at end of file
+diff --git a/app/src/main/java/br/com/pugramming/estudokotlinprojbase/remote/webservices/DealsService.kt b/app/src/main/java/br/com/pugramming/estudokotlinprojbase/remote/webservices/DealsService.kt
+new file mode 100644
+index 0000000..cf89635
+--- /dev/null
++++ b/app/src/main/java/br/com/pugramming/estudokotlinprojbase/remote/webservices/DealsService.kt
+@@ -0,0 +1,10 @@
++package br.com.pugramming.estudokotlinprojbase.remote.webservices
++
++import br.com.pugramming.estudokotlinprojbase.remote.model.Car
++import retrofit2.Call
++import retrofit2.http.GET
++
++interface DealsService {
++    @GET("deals")
++    fun getDeals(): Call<List<Car>>
++}
+\ No newline at end of file
+diff --git a/app/src/main/java/br/com/pugramming/estudokotlinprojbase/remote/webservices/DealsServiceFactory.kt b/app/src/main/java/br/com/pugramming/estudokotlinprojbase/remote/webservices/DealsServiceFactory.kt
+new file mode 100644
+index 0000000..6d51cd5
+--- /dev/null
++++ b/app/src/main/java/br/com/pugramming/estudokotlinprojbase/remote/webservices/DealsServiceFactory.kt
+@@ -0,0 +1,17 @@
++package br.com.pugramming.estudokotlinprojbase.remote.webservices
++
++import retrofit2.Retrofit
++import retrofit2.converter.moshi.MoshiConverterFactory
++
++object DealsServiceFactory {
++
++    private fun getRetrofit(): Retrofit {
++        return Retrofit.Builder()
++            .baseUrl("https://private-525ce1-icarrostest.apiary-mock.com/api/")
++            .addConverterFactory(MoshiConverterFactory.create())
++            .build()
++    }
++
++    fun createDealsService() = getRetrofit().create(DealsService::class.java)
++
++}
+\ No newline at end of file
+diff --git a/app/src/main/java/br/com/pugramming/estudokotlinprojbase/remote/webservices/DealsWS.kt b/app/src/main/java/br/com/pugramming/estudokotlinprojbase/remote/webservices/DealsWS.kt
+deleted file mode 100644
+index 7755417..0000000
+--- a/app/src/main/java/br/com/pugramming/estudokotlinprojbase/remote/webservices/DealsWS.kt
++++ /dev/null
+@@ -1,16 +0,0 @@
+-package br.com.pugramming.estudokotlinprojbase.remote.webservices
+-
+-import androidx.lifecycle.LiveData
+-import androidx.lifecycle.MutableLiveData
+-import br.com.pugramming.estudokotlinprojbase.remote.model.Car
+-
+-interface DealsWS{
+-
+-    //Função que vai pegar um retorno do WS
+-    fun getAllDeals():LiveData<List<Car>>{
+-        val mutableDeals = MutableLiveData<List<Car>>()
+-        mutableDeals.value = listOf(Car(), Car(), Car()) //Setar valores reais
+-        return mutableDeals
+-    }
+-
+-}
+\ No newline at end of file
+diff --git a/app/src/main/java/br/com/pugramming/estudokotlinprojbase/repository/DealsRepository.kt b/app/src/main/java/br/com/pugramming/estudokotlinprojbase/repository/DealsRepository.kt
+index 047b122..ab86573 100644
+--- a/app/src/main/java/br/com/pugramming/estudokotlinprojbase/repository/DealsRepository.kt
++++ b/app/src/main/java/br/com/pugramming/estudokotlinprojbase/repository/DealsRepository.kt
+@@ -1,13 +1,37 @@
+ package br.com.pugramming.estudokotlinprojbase.repository
+ 
+-import androidx.lifecycle.LiveData
+ import br.com.pugramming.estudokotlinprojbase.remote.model.Car
+-import br.com.pugramming.estudokotlinprojbase.remote.webservices.DealsWS
++import br.com.pugramming.estudokotlinprojbase.remote.webservices.DealsService
++import retrofit2.Call
++import retrofit2.Callback
++import retrofit2.Response
+ 
+-class DealsRepository:DealsWS{
++class DealsRepository(private val dealsService:DealsService){
+ 
+-    override fun getAllDeals(): LiveData<List<Car>> {
+-        return super.getAllDeals()
++    fun getDeals(dealsCallback: DealsCallback){
++        val call = dealsService.getDeals()
++        call.enqueue(object: Callback<List<Car>> {
++            override fun onResponse(call: Call<List<Car>>,
++                                    response: Response<List<Car>>
++            ) {
++               if(response.isSuccessful) {
++                   val resp = response.body()
++                   dealsCallback.onSuccess(resp ?: emptyList())
++               }else{
++                   dealsCallback.onError("erro")
++               }
++            }
++
++            override fun onFailure(call: Call<List<Car>?>?,
++                                   t: Throwable?) {
++                dealsCallback.onError("erro2")
++            }
++        })
++    }
++
++    interface DealsCallback{
++        fun onSuccess(carList: List<Car>)
++        fun onError(error: String)
+     }
+ 
+ }
+\ No newline at end of file
+diff --git a/app/src/main/java/br/com/pugramming/estudokotlinprojbase/view/DealsListActivity.kt b/app/src/main/java/br/com/pugramming/estudokotlinprojbase/view/DealsListActivity.kt
+index 52c367d..55167cd 100644
+--- a/app/src/main/java/br/com/pugramming/estudokotlinprojbase/view/DealsListActivity.kt
++++ b/app/src/main/java/br/com/pugramming/estudokotlinprojbase/view/DealsListActivity.kt
+@@ -10,13 +10,14 @@ import br.com.pugramming.estudokotlinprojbase.DealsAdapter
+ import br.com.pugramming.estudokotlinprojbase.R
+ import br.com.pugramming.estudokotlinprojbase.databinding.ActivityDealslistBinding
+ import br.com.pugramming.estudokotlinprojbase.remote.model.Car
++import br.com.pugramming.estudokotlinprojbase.remote.webservices.DealsServiceFactory
+ import br.com.pugramming.estudokotlinprojbase.repository.DealsRepository
+ import br.com.pugramming.estudokotlinprojbase.viewmodel.DealsListViewModel
+ 
+ //lar
+ class DealsListActivity : AppCompatActivity() {
+ 
+-    private val repository = DealsRepository()
++    private val repository = DealsRepository(DealsServiceFactory.createDealsService())
+     private val viewModel = DealsListViewModel(repository)
+     private lateinit var adapter: DealsAdapter
+ 
+@@ -48,6 +49,7 @@ class DealsListActivity : AppCompatActivity() {
+     private fun bindObservable() {
+         viewModel.listOfDeals.observe(this, Observer { dealersList ->
+             dealersList?.let {
++                //Não é preciso declarar lista dentro do adapter, ele já tem uma por padrão
+                adapter.submitList(dealersList)
+             }
+         })
+diff --git a/app/src/main/java/br/com/pugramming/estudokotlinprojbase/viewmodel/AdapterViewModel.kt b/app/src/main/java/br/com/pugramming/estudokotlinprojbase/viewmodel/AdapterViewModel.kt
+index addb085..f865d9b 100644
+--- a/app/src/main/java/br/com/pugramming/estudokotlinprojbase/viewmodel/AdapterViewModel.kt
++++ b/app/src/main/java/br/com/pugramming/estudokotlinprojbase/viewmodel/AdapterViewModel.kt
+@@ -6,9 +6,9 @@ import br.com.pugramming.estudokotlinprojbase.remote.model.Car
+ 
+ class AdapterViewModel(car: Car):AndroidViewModel(Application()){
+ 
+-    val price = car.price
++    val price = car.price.toString()
+     val trim = car.trim
+-    val year = car.year
++    val year = "${car.manufactureYear} / ${car.modelYear}"
+     val color = car.color
+     val gear = car.gear
+     val fuel = car.fuel
+diff --git a/app/src/main/java/br/com/pugramming/estudokotlinprojbase/viewmodel/DealsListViewModel.kt b/app/src/main/java/br/com/pugramming/estudokotlinprojbase/viewmodel/DealsListViewModel.kt
+index 1461158..0d41bc3 100644
+--- a/app/src/main/java/br/com/pugramming/estudokotlinprojbase/viewmodel/DealsListViewModel.kt
++++ b/app/src/main/java/br/com/pugramming/estudokotlinprojbase/viewmodel/DealsListViewModel.kt
+@@ -13,8 +13,18 @@ class DealsListViewModel(private val repository: DealsRepository) : ViewModel(){
+     val listOfDeals:LiveData<List<Car>> = mutableDeals
+ 
+     fun loadDeals(){
+-        Log.d("DealsListViewModel","loadDeals")
+-        mutableDeals.value = repository.getAllDeals().value
++        repository.getDeals(
++            object : DealsRepository.DealsCallback{
++                override fun onSuccess(carList: List<Car>) {
++                    mutableDeals.value = carList
++                }
++
++                override fun onError(error: String) {
++                    Log.d("DealsListViewModel", "onError")
++                }
++            }
++        )
+     }
+ 
++
+ }
+\ No newline at end of file
+diff --git a/app/src/main/res/layout/car_item.xml b/app/src/main/res/layout/car_item.xml
+index af3aea5..a2d28e0 100644
+--- a/app/src/main/res/layout/car_item.xml
++++ b/app/src/main/res/layout/car_item.xml
+@@ -124,7 +124,7 @@
+                     android:layout_height="wrap_content"
+                     android:layout_marginTop="16dp"
+                     android:layout_marginBottom="16dp"
+-                    android:text=""
++                    android:text="@{viewModel.color}"
+                     android:textColor="#000"
+                     app:layout_constraintBottom_toBottomOf="parent"
+                     app:layout_constraintEnd_toEndOf="parent"
+@@ -136,7 +136,7 @@
+                     android:id="@+id/tvGear"
+                     android:layout_width="wrap_content"
+                     android:layout_height="wrap_content"
+-                    android:text=""
++                    android:text="@{viewModel.gear}"
+                     android:textColor="#000"
+                     app:layout_constraintBottom_toBottomOf="@+id/textView4"
+                     app:layout_constraintEnd_toStartOf="@+id/textView4"
+@@ -148,7 +148,7 @@
+                     android:id="@+id/tvFuel"
+                     android:layout_width="wrap_content"
+                     android:layout_height="wrap_content"
+-                    android:text=""
++                    android:text="@{viewModel.fuel}"
+                     android:textColor="#000"
+                     app:layout_constraintBottom_toBottomOf="@+id/textView5"
+                     app:layout_constraintEnd_toStartOf="@+id/textView5"
+-- 
+2.22.0.windows.1
+
