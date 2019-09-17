@@ -24,19 +24,21 @@ class DealsListActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val binding = DataBindingUtil.setContentView<ActivityDealslistBinding>(this, R.layout.activity_dealslist)
+        val binding = DataBindingUtil.setContentView<ActivityDealslistBinding>(
+            this, R.layout.activity_dealslist)
         binding.lifecycleOwner = this
 
         bindObservable()
 
         viewModel.loadDeals()
         setupAdapter(binding.rvCars)
+
     }
 
     private fun setupAdapter(recyclerView: RecyclerView) {
         Log.d("DealsListActivity","setupAdapter")
         adapter =
-            DealsAdapter(::onItemClick)
+            DealsAdapter(::onItemClick, this)
 
         recyclerView.adapter = adapter
         //recyclerView.addItemDecoration(DividerItemDecoration(activity, DividerItemDecoration.VERTICAL))

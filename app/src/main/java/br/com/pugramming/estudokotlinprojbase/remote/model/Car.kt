@@ -10,7 +10,7 @@ data class Car(
     val manufactureYear: Int,
     val model: String,
     val modelYear: Int,
-    val photos: List<String>,
+    val photos: List<String>?,
     val price: Int,
     val trim: String
 )
