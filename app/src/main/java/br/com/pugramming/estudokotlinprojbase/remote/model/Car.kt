@@ -1,5 +1,9 @@
 package br.com.pugramming.estudokotlinprojbase.remote.model
 
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
+
+@Parcelize
 data class Car(
     val color: String,
     val doors: Int,
@@ -13,4 +17,4 @@ data class Car(
     val photos: List<String>?,
     val price: Int,
     val trim: String
-)
+):Parcelable

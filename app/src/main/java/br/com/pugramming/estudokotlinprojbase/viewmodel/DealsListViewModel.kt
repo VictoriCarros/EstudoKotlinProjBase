@@ -25,6 +25,4 @@ class DealsListViewModel(private val repository: DealsRepository) : ViewModel(){
             }
         )
     }
-
-
 }

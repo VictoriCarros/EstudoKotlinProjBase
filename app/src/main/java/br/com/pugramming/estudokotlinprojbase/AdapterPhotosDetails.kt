@@ -3,24 +3,21 @@ package br.com.pugramming.estudokotlinprojbase
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import androidx.core.app.ActivityOptionsCompat
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
-import br.com.pugramming.estudokotlinprojbase.remote.model.Car
-import br.com.pugramming.estudokotlinprojbase.view.DealsDetailsActivity
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 
-//inner constructor makes the class available to everybody but the constructor only to inside the module
-class AdapterPhotos(
-    private val car: Car,
+class AdapterPhotosDetails(
+    private val photos: List<String>,
+    private var sliderPosition: Int,
     private val act: Activity) : PagerAdapter() {
 
+    private var carregouSlideSelecionado = false
     private var layoutInflater : LayoutInflater? = null
 
     override fun isViewFromObject(view: View, `object`: Any): Boolean {
@@ -28,7 +25,7 @@ class AdapterPhotos(
     }
 
     override fun getCount(): Int {
-        return car.photos?.size ?: 0
+        return photos.size
     }
 
     @SuppressLint("InflateParams")
@@ -37,25 +34,18 @@ class AdapterPhotos(
         val v = layoutInflater!!.inflate(R.layout.photo_item, null)
         val image = v.findViewById<View>(R.id.imgPhoto) as ImageView
 
+        val vp = container as ViewPager
+        vp.addView(v , 0)
+
+        if(!carregouSlideSelecionado)
+            vp.currentItem = sliderPosition
+        carregouSlideSelecionado = true
+
         Glide.with(act)
-            .load(car.photos!![position])
+            .load(photos[position])
             .error(R.drawable.erroplaceholder)
             .diskCacheStrategy(DiskCacheStrategy.ALL)
             .into(image)
-
-        image.setOnClickListener {
-
-            //val options = ActivityOptionsCompat.makeSceneTransitionAnimation(
-            //act, image, "imgPhoto").toBundle()
-
-            val intent = Intent(container.context, DealsDetailsActivity::class.java)
-            intent.putExtra("car", car)
-            intent.putExtra("pagerPosition", position)
-            container.context.startActivity(intent)
-        }
-
-        val vp = container as ViewPager
-        vp.addView(v , 0)
 
         return v
     }

@@ -5,13 +5,13 @@
     <data>
         <variable
                 name="viewModel"
-                type="br.com.pugramming.estudokotlinprojbase.viewmodel.AdapterViewModel"/>
+                type="br.com.pugramming.estudokotlinprojbase.viewmodel.AdapterDealsListViewModel"/>
         <variable name="position" type="int"/>
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="220dp">
+            android:layout_height="283dp">
 
         <ImageView
                 android:layout_width="match_parent"
@@ -20,7 +20,7 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"/>
+                app:layout_constraintBottom_toBottomOf="parent" android:scaleType="fitCenter"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

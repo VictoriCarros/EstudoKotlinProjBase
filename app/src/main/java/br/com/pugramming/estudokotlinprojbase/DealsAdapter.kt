@@ -1,6 +1,7 @@
 package br.com.pugramming.estudokotlinprojbase
 
 import android.app.Activity
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,7 +11,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import br.com.pugramming.estudokotlinprojbase.databinding.CarItemBinding
 import br.com.pugramming.estudokotlinprojbase.remote.model.Car
-import br.com.pugramming.estudokotlinprojbase.viewmodel.AdapterViewModel
+import br.com.pugramming.estudokotlinprojbase.viewmodel.AdapterDealsListViewModel
 
 //Ao implementar o ListAdapter não é necessário dar overrite no getItemCount()
 class DealsAdapter(private val itemClick: (Car) -> Unit, private val act: Activity):ListAdapter<Car, DealsAdapter.ViewHolder>(DiffCallback) {
@@ -21,10 +22,10 @@ class DealsAdapter(private val itemClick: (Car) -> Unit, private val act: Activi
     }
 
     override fun onBindViewHolder(holder: DealsAdapter.ViewHolder, position: Int) {
-        getItem(position)?.let { dealer ->
+        getItem(position)?.let { car ->
             with (holder) {
-                itemView.tag = dealer
-                bind(dealer, createOnClickListener(dealer), act)
+                itemView.tag = car
+                bind(car, createOnClickListener(car), act)
            }
         }
     }
@@ -35,11 +36,11 @@ class DealsAdapter(private val itemClick: (Car) -> Unit, private val act: Activi
 
     class ViewHolder(private val binding: CarItemBinding):RecyclerView.ViewHolder(binding.root){
         fun bind(carDeal: Car, listener: View.OnClickListener, act: Activity) {
-            //TODO Implementar o listener
             with (binding) {
-                viewModel = AdapterViewModel(carDeal)
+                viewModel = AdapterDealsListViewModel(carDeal)
+                clickListener = listener
 
-                val adapter = AdapterPhotos(carDeal.photos ?: emptyList(), act)
+                val adapter = AdapterPhotos(carDeal, act)
                 binding.slider.adapter = adapter
 
                 executePendingBindings()
@@ -56,5 +57,4 @@ class DealsAdapter(private val itemClick: (Car) -> Unit, private val act: Activi
             return oldItem == newItem
         }
     }
-
 }

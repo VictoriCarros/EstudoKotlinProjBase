@@ -1,5 +1,6 @@
 package br.com.pugramming.estudokotlinprojbase.view
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -32,20 +33,20 @@ class DealsListActivity : AppCompatActivity() {
 
         viewModel.loadDeals()
         setupAdapter(binding.rvCars)
-
     }
 
     private fun setupAdapter(recyclerView: RecyclerView) {
         Log.d("DealsListActivity","setupAdapter")
-        adapter =
-            DealsAdapter(::onItemClick, this)
+        adapter = DealsAdapter(::onItemClick, this)
 
         recyclerView.adapter = adapter
         //recyclerView.addItemDecoration(DividerItemDecoration(activity, DividerItemDecoration.VERTICAL))
     }
 
     private fun onItemClick(car: Car) {
-       Log.d("onItemClick","clicou ${car.trim}")
+        val intent = Intent(this, DealsDetailsActivity::class.java)
+        intent.putExtra("car", car)
+        this.startActivity(intent)
     }
 
     private fun bindObservable() {

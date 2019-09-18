@@ -8,7 +8,7 @@ import br.com.pugramming.estudokotlinprojbase.remote.model.Car
 import br.com.pugramming.estudokotlinprojbase.utils.currencyReal
 import com.bumptech.glide.Glide
 
-class AdapterViewModel(car: Car):AndroidViewModel(Application()){
+class AdapterDealsListViewModel(car: Car):AndroidViewModel(Application()){
 
     val price = "R$ ${car.price.currencyReal()}"
     val trim = car.trim
@@ -19,5 +19,4 @@ class AdapterViewModel(car: Car):AndroidViewModel(Application()){
     val photos = car.photos
 
     //fun loadPhoto(view:ImageView, url:String) = Glide.with(view.context).load(url).into(view)
-
 }
