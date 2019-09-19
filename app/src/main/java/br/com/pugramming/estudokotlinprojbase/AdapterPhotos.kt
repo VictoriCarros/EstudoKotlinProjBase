@@ -1,25 +1,23 @@
 package br.com.pugramming.estudokotlinprojbase
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import androidx.core.app.ActivityOptionsCompat
+import androidx.core.os.bundleOf
+import androidx.navigation.findNavController
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
 import br.com.pugramming.estudokotlinprojbase.remote.model.Car
-import br.com.pugramming.estudokotlinprojbase.view.DealsDetailsActivity
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 
 //inner constructor makes the class available to everybody but the constructor only to inside the module
 class AdapterPhotos(
     private val car: Car,
-    private val act: Activity) : PagerAdapter() {
+    private val context: Context) : PagerAdapter() {
 
     private var layoutInflater : LayoutInflater? = null
 
@@ -37,21 +35,17 @@ class AdapterPhotos(
         val v = layoutInflater!!.inflate(R.layout.photo_item, null)
         val image = v.findViewById<View>(R.id.imgPhoto) as ImageView
 
-        Glide.with(act)
+        Glide.with(context)
             .load(car.photos!![position])
             .error(R.drawable.erroplaceholder)
             .diskCacheStrategy(DiskCacheStrategy.ALL)
             .into(image)
 
         image.setOnClickListener {
-
-            //val options = ActivityOptionsCompat.makeSceneTransitionAnimation(
-            //act, image, "imgPhoto").toBundle()
-
-            val intent = Intent(container.context, DealsDetailsActivity::class.java)
-            intent.putExtra("car", car)
-            intent.putExtra("pagerPosition", position)
-            container.context.startActivity(intent)
+            var bundle = bundleOf(
+                "car" to car,
+                "pagerPosition" to position)
+            container.findNavController().navigate(R.id.action_list_to_details, bundle)
         }
 
         val vp = container as ViewPager

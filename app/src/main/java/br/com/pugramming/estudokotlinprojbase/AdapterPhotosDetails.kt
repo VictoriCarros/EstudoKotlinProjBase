@@ -15,7 +15,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 class AdapterPhotosDetails(
     private val photos: List<String>,
     private var sliderPosition: Int,
-    private val act: Activity) : PagerAdapter() {
+    private val context: Context) : PagerAdapter() {
 
     private var carregouSlideSelecionado = false
     private var layoutInflater : LayoutInflater? = null
@@ -41,7 +41,7 @@ class AdapterPhotosDetails(
             vp.currentItem = sliderPosition
         carregouSlideSelecionado = true
 
-        Glide.with(act)
+        Glide.with(context)
             .load(photos[position])
             .error(R.drawable.erroplaceholder)
             .diskCacheStrategy(DiskCacheStrategy.ALL)

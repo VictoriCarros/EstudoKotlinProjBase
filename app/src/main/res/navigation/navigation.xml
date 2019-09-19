@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools" android:id="@+id/navigation"
+            app:startDestination="@id/dealsListFragment">
+
+    <fragment android:id="@+id/dealsListFragment"
+              android:name="br.com.pugramming.estudokotlinprojbase.view.DealsListFragment"
+              android:label="fragment_deals_list" tools:layout="@layout/fragment_deals_list">
+        <action android:id="@+id/action_list_to_details"
+                app:destination="@id/dealsDetailsFragment"/>
+    </fragment>
+
+    <fragment android:id="@+id/dealsDetailsFragment"
+              android:name="br.com.pugramming.estudokotlinprojbase.view.DealsDetailsFragment"
+              android:label="fragment_deals_details" tools:layout="@layout/fragment_deals_details">
+        <argument android:name="car" app:argType="br.com.pugramming.estudokotlinprojbase.remote.model.Car"
+                  app:nullable="false"/>
+    </fragment>
+
+
+</navigation>

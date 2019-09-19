@@ -1,6 +1,5 @@
 package br.com.pugramming.estudokotlinprojbase
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
@@ -9,23 +8,19 @@ import br.com.pugramming.estudokotlinprojbase.databinding.CarEquipmentsRowItemBi
 import br.com.pugramming.estudokotlinprojbase.remote.model.Equipment
 
 class EquipmentsAdapter(private val equipementList:List<Equipment>)
-    : RecyclerView.Adapter<EquipmentsAdapter.ViewHolder>() {
+    : RecyclerView.Adapter<EquipmentsAdapter.ViewHolder>(){
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EquipmentsAdapter.ViewHolder {
-        val binding:CarEquipmentsRowItemBinding = DataBindingUtil.inflate(LayoutInflater.from(parent.context),
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val binding: CarEquipmentsRowItemBinding = DataBindingUtil.inflate(LayoutInflater.from(parent.context),
             R.layout.car_equipments_row_item,
             parent, false)
+
         return ViewHolder(binding)
     }
 
     override fun getItemCount() = equipementList.size
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        for(eq in equipementList){
-            Log.d("eqpsOnBind", eq.category)
-        }
-
-
         holder.bind(equipementList[position])
     }
 
@@ -39,7 +34,6 @@ class EquipmentsAdapter(private val equipementList:List<Equipment>)
         }
     }
 }
-
 
 /*
 class EquipmentsAdapter: ListAdapter<Equipment, EquipmentsAdapter.ViewHolder>(DiffCallback) {

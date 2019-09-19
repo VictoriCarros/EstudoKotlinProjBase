@@ -14,7 +14,9 @@ import br.com.pugramming.estudokotlinprojbase.remote.model.Car
 import br.com.pugramming.estudokotlinprojbase.viewmodel.AdapterDealsListViewModel
 
 //Ao implementar o ListAdapter não é necessário dar overrite no getItemCount()
-class DealsAdapter(private val itemClick: (Car) -> Unit, private val act: Activity):ListAdapter<Car, DealsAdapter.ViewHolder>(DiffCallback) {
+class DealsAdapter(private val itemClick: (Car) -> Unit,
+                   private val context: Context
+):ListAdapter<Car, DealsAdapter.ViewHolder>(DiffCallback) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DealsAdapter.ViewHolder {
         val binding:CarItemBinding = DataBindingUtil.inflate(LayoutInflater.from(parent.context), R.layout.car_item, parent, false)
@@ -25,7 +27,7 @@ class DealsAdapter(private val itemClick: (Car) -> Unit, private val act: Activi
         getItem(position)?.let { car ->
             with (holder) {
                 itemView.tag = car
-                bind(car, createOnClickListener(car), act)
+                bind(car, createOnClickListener(car), context)
            }
         }
     }
@@ -35,12 +37,12 @@ class DealsAdapter(private val itemClick: (Car) -> Unit, private val act: Activi
     }
 
     class ViewHolder(private val binding: CarItemBinding):RecyclerView.ViewHolder(binding.root){
-        fun bind(carDeal: Car, listener: View.OnClickListener, act: Activity) {
+        fun bind(carDeal: Car, listener: View.OnClickListener, context: Context) {
             with (binding) {
                 viewModel = AdapterDealsListViewModel(carDeal)
                 clickListener = listener
 
-                val adapter = AdapterPhotos(carDeal, act)
+                val adapter = AdapterPhotos(carDeal, context)
                 binding.slider.adapter = adapter
 
                 executePendingBindings()
