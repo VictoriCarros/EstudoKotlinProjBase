@@ -12,6 +12,7 @@ import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.recyclerview.widget.RecyclerView
 import br.com.pugramming.estudokotlinprojbase.DealsAdapter
 import br.com.pugramming.estudokotlinprojbase.R
@@ -20,13 +21,14 @@ import br.com.pugramming.estudokotlinprojbase.remote.model.Car
 import br.com.pugramming.estudokotlinprojbase.remote.webservices.DealsServiceFactory
 import br.com.pugramming.estudokotlinprojbase.repository.DealsRepository
 import br.com.pugramming.estudokotlinprojbase.viewmodel.DealsListViewModel
+import kotlinx.android.synthetic.main.car_item.view.*
 import kotlinx.android.synthetic.main.fragment_deals_list.view.*
 
 class DealsListFragment : Fragment() {
     private var listener: OnFragmentInteractionListener? = null
     private val repository = DealsRepository(DealsServiceFactory.createDealsService())
     private val viewModel = DealsListViewModel(repository)
-    private lateinit var fragmentDealsListBinding:View
+    private var fragmentDealsListBinding:View? = null
     private lateinit var adapter: DealsAdapter
     private var ctx: Context? = null
 
@@ -36,22 +38,26 @@ class DealsListFragment : Fragment() {
     ): View? {
         ctx = context
 
-        fragmentDealsListBinding = inflater.inflate(R.layout.fragment_deals_list, container, false)
+        if(fragmentDealsListBinding == null) {
+            fragmentDealsListBinding = inflater.inflate(R.layout.fragment_deals_list, container, false)
+
+            bindObservable()
+
+            viewModel.loadDeals()
+            setupAdapter(fragmentDealsListBinding!!.rvCars)
+        }
+
         val binding: CarItemBinding = DataBindingUtil.inflate(LayoutInflater.from(context), R.layout.car_item, container, false)
 
         binding.lifecycleOwner = this
-
-        bindObservable()
-
-        viewModel.loadDeals()
-        setupAdapter(fragmentDealsListBinding.rvCars)
 
         return fragmentDealsListBinding
     }
 
     private fun onItemClick(car: Car) {
-        var bundle = bundleOf(Pair("car", car))
-        fragmentDealsListBinding.findNavController().navigate(R.id.action_list_to_details, bundle)
+        val extras = FragmentNavigatorExtras(fragmentDealsListBinding!!.slider to "transitionSlider")
+        var bundle = bundleOf("car" to car)
+        fragmentDealsListBinding!!.findNavController().navigate(R.id.action_list_to_details, bundle, null, extras)
     }
 
     private fun bindObservable() {
@@ -67,8 +73,7 @@ class DealsListFragment : Fragment() {
         adapter = DealsAdapter(::onItemClick, ctx!!)
 
         recyclerView.adapter = adapter
-        //recyclerView.addItemDecoration(DividerItemDecoration(activity, DividerItemDecoration.VERTICAL))
-    }
+     }
 
     override fun onDetach() {
         super.onDetach()

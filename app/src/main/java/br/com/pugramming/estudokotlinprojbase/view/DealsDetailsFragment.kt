@@ -1,7 +1,6 @@
 package br.com.pugramming.estudokotlinprojbase.view
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -39,7 +38,6 @@ class DealsDetailsFragment : Fragment() {
         view.tvFuel.text = car?.fuel
         view.tvMakeModel.text = "${car?.make} ${car?.model} - ${car?.doors} portas"
         view.tvYears.text = "${car?.modelYear} / ${car?.manufactureYear}"
-
 
         view.rvEquipments.adapter = EquipmentsAdapter(groupList(car!!.equipments))
 
